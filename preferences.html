@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Let's find your ideal laptop — GadgetLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/preferences.css" />
+</head>
+<body>
+
+<header class="site-header container">
+  <a href="index.html" class="brand">Gadget<span class="brand__mark">Lens</span></a>
+  <nav class="site-nav">
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme="light">☀ Light</button>
+      <button type="button" data-theme="dark">◐ Dark</button>
+    </div>
+    <span id="session-badge" style="display:flex; align-items:center; gap:var(--space-3);"></span>
+  </nav>
+</header>
+
+<div class="pref-header">
+  <div class="pref-progress" id="pref-progress" aria-hidden="true">
+    <span class="pref-progress__step" data-step="1"></span>
+    <span class="pref-progress__step" data-step="2"></span>
+    <span class="pref-progress__step" data-step="3"></span>
+    <span class="pref-progress__step" data-step="4"></span>
+    <span class="pref-progress__step" data-step="5"></span>
+  </div>
+  <p class="pref-progress__label" id="pref-progress-label">Step 1 of 5</p>
+  <h1>Let's find your ideal laptop.</h1>
+  <p>Tell us a little about how you'll use your laptop. We'll handle the technical details for you.</p>
+</div>
+
+<form id="preferences-form" class="pref-main" novalidate>
+
+  <!-- STEP 1: Purpose -->
+  <section class="pref-step is-active" data-step="1">
+    <div class="pref-section">
+      <h2>What will you mainly use your laptop for?</h2>
+      <p class="pref-section__hint">Choose the option that best describes your main use.</p>
+
+      <div class="option-grid" id="purpose-grid" role="radiogroup" aria-label="Main purpose">
+        <button type="button" class="option-card" data-value="education">
+          <span class="option-card__icon" aria-hidden="true">📚</span>
+          <span class="option-card__label">Education</span>
+        </button>
+        <button type="button" class="option-card" data-value="work">
+          <span class="option-card__icon" aria-hidden="true">💼</span>
+          <span class="option-card__label">Work / Job</span>
+        </button>
+        <button type="button" class="option-card" data-value="gaming">
+          <span class="option-card__icon" aria-hidden="true">🎮</span>
+          <span class="option-card__label">Gaming</span>
+        </button>
+        <button type="button" class="option-card" data-value="general">
+          <span class="option-card__icon" aria-hidden="true">🌐</span>
+          <span class="option-card__label">General Everyday Use</span>
+        </button>
+        <button type="button" class="option-card" data-value="creative">
+          <span class="option-card__icon" aria-hidden="true">🎨</span>
+          <span class="option-card__label">Creative Work</span>
+        </button>
+      </div>
+
+      <div class="pref-subgroup" id="gaming-subgroup" hidden>
+        <h3>What kind of gaming do you expect to do?</h3>
+        <div class="pill-grid" id="gaming-level-grid" role="radiogroup" aria-label="Gaming intensity">
+          <button type="button" class="pill-choice" data-value="casual">Casual Gaming</button>
+          <button type="button" class="pill-choice" data-value="moderate">Moderate Gaming</button>
+          <button type="button" class="pill-choice" data-value="heavy">Heavy Gaming</button>
+        </div>
+      </div>
+    </div>
+    <div class="step-nav"><span></span><button type="button" class="btn btn-primary next-step">Next</button></div>
+  </section>
+
+  <!-- STEP 2: Budget -->
+  <section class="pref-step" data-step="2">
+    <div class="pref-section">
+      <h2>What's your budget?</h2>
+      <p class="pref-section__hint">Drag either handle to set your minimum and maximum budget.</p>
+
+      <div class="budget-readout" id="budget-readout">₹50,000 – ₹80,000</div>
+
+      <div class="range-slider">
+        <div class="range-slider__track"></div>
+        <div class="range-slider__fill" id="budget-fill"></div>
+        <input type="range" id="budget-min" min="30000" max="150000" step="5000" value="50000" aria-label="Minimum budget" />
+        <input type="range" id="budget-max" min="30000" max="150000" step="5000" value="80000" aria-label="Maximum budget" />
+      </div>
+      <div class="budget-endpoints"><span>₹30,000</span><span>₹1,50,000</span></div>
+    </div>
+    <div class="step-nav">
+      <button type="button" class="btn btn-secondary prev-step">Back</button>
+      <button type="button" class="btn btn-primary next-step">Next</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: Simple preferences -->
+  <section class="pref-step" data-step="3">
+    <div class="pref-section">
+      <h2>A few more preferences</h2>
+      <p class="pref-section__hint">No technical knowledge needed — just pick what sounds right.</p>
+
+      <div class="pref-subgroup">
+        <h3>Screen size</h3>
+        <div class="pill-grid" data-group="screenSize">
+          <button type="button" class="pill-choice" data-value="compact">Compact</button>
+          <button type="button" class="pill-choice" data-value="standard">Standard</button>
+          <button type="button" class="pill-choice" data-value="large">Large</button>
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+        </div>
+      </div>
+
+      <div class="pref-subgroup">
+        <h3>Display quality</h3>
+        <div class="pill-grid" data-group="displayQuality">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="good">Good Quality</button>
+          <button type="button" class="pill-choice" data-value="high">High Quality</button>
+          <button type="button" class="pill-choice" data-value="premium">Premium Display</button>
+        </div>
+      </div>
+
+      <div class="pref-subgroup">
+        <h3>Operating system</h3>
+        <div class="pill-grid" data-group="os">
+          <button type="button" class="pill-choice" data-value="windows">Windows</button>
+          <button type="button" class="pill-choice" data-value="linux">Linux</button>
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+        </div>
+      </div>
+
+      <div class="pref-subgroup">
+        <h3>Portability</h3>
+        <div class="pill-grid" data-group="portability">
+          <button type="button" class="pill-choice" data-value="very-important">Very Important</button>
+          <button type="button" class="pill-choice" data-value="important">Important</button>
+          <button type="button" class="pill-choice" data-value="not-important">Not Important</button>
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+        </div>
+      </div>
+
+      <div class="pref-subgroup">
+        <h3>Battery life</h3>
+        <div class="pill-grid" data-group="batteryLife">
+          <button type="button" class="pill-choice" data-value="very-important">Very Important</button>
+          <button type="button" class="pill-choice" data-value="important">Important</button>
+          <button type="button" class="pill-choice" data-value="not-important">Not Important</button>
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+        </div>
+      </div>
+    </div>
+    <div class="step-nav">
+      <button type="button" class="btn btn-secondary prev-step">Back</button>
+      <button type="button" class="btn btn-primary next-step">Next</button>
+    </div>
+  </section>
+
+  <!-- STEP 4: Priority ranking -->
+  <section class="pref-step" data-step="4">
+    <div class="pref-section">
+      <h2>What matters most to you?</h2>
+      <p class="priority-explainer">Put the most important factor at the top. GadgetLens will use your priorities when ranking suitable laptops — drag them, or use the arrows.</p>
+
+      <ul class="priority-list" id="priority-list">
+        <li class="priority-item" draggable="true" data-key="performance">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">1</span>
+          <span class="priority-item__label">Performance</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="battery">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">2</span>
+          <span class="priority-item__label">Battery Life</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="price">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">3</span>
+          <span class="priority-item__label">Price</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="portability">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">4</span>
+          <span class="priority-item__label">Portability</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="storage">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">5</span>
+          <span class="priority-item__label">Storage</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="display">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">6</span>
+          <span class="priority-item__label">Display</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+        <li class="priority-item" draggable="true" data-key="gaming">
+          <span class="priority-item__handle" aria-hidden="true">☰</span>
+          <span class="priority-item__rank">7</span>
+          <span class="priority-item__label">Gaming Capability</span>
+          <span class="priority-item__controls">
+            <button type="button" class="move-up" aria-label="Move up">↑</button>
+            <button type="button" class="move-down" aria-label="Move down">↓</button>
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div class="step-nav">
+      <button type="button" class="btn btn-secondary prev-step">Back</button>
+      <button type="button" class="btn btn-primary next-step">Next</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: Advanced preferences (optional) -->
+  <section class="pref-step" data-step="5">
+    <div class="pref-section">
+      <h2>Advanced preferences</h2>
+      <p class="pref-section__hint">Optional — for users familiar with laptop specifications.</p>
+      <div class="advanced-intro">
+        These options are for users who are already familiar with laptop specifications. If you're unsure, leave them blank and we'll choose suitable specifications for you.
+      </div>
+
+      <div class="advanced-group">
+        <h3>Processor</h3>
+        <div class="pill-grid" data-group="processor">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="entry">Entry-Level</button>
+          <button type="button" class="pill-choice" data-value="mid">Mid-Range</button>
+          <button type="button" class="pill-choice" data-value="high">High-Performance</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>RAM</h3>
+        <div class="pill-grid" data-group="ram">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="8gb">8 GB</button>
+          <button type="button" class="pill-choice" data-value="16gb">16 GB</button>
+          <button type="button" class="pill-choice" data-value="32gb-plus">32 GB+</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Storage</h3>
+        <div class="pill-grid" data-group="storage">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="256gb">256 GB</button>
+          <button type="button" class="pill-choice" data-value="512gb">512 GB</button>
+          <button type="button" class="pill-choice" data-value="1tb-plus">1 TB+</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Graphics</h3>
+        <div class="pill-grid" data-group="graphics">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="integrated">Integrated</button>
+          <button type="button" class="pill-choice" data-value="basic-dedicated">Basic Dedicated</button>
+          <button type="button" class="pill-choice" data-value="high-dedicated">High-Performance Dedicated</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Refresh rate</h3>
+        <div class="pill-grid" data-group="refreshRate">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="60hz">60 Hz</button>
+          <button type="button" class="pill-choice" data-value="90hz-plus">90 Hz+</button>
+          <button type="button" class="pill-choice" data-value="120hz-plus">120 Hz+</button>
+          <button type="button" class="pill-choice" data-value="144hz-plus">144 Hz+</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Display type</h3>
+        <div class="pill-grid" data-group="displayType">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="ips">IPS</button>
+          <button type="button" class="pill-choice" data-value="oled">OLED</button>
+          <button type="button" class="pill-choice" data-value="other">Other</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Upgradeability</h3>
+        <div class="pill-grid" data-group="upgradeability">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="ram">RAM Upgradeable</button>
+          <button type="button" class="pill-choice" data-value="storage">Storage Upgradeable</button>
+          <button type="button" class="pill-choice" data-value="both">Both</button>
+          <button type="button" class="pill-choice" data-value="not-important">Not Important</button>
+        </div>
+      </div>
+
+      <div class="advanced-group">
+        <h3>Weight</h3>
+        <div class="pill-grid" data-group="weight">
+          <button type="button" class="pill-choice is-selected" data-value="no-preference">No Preference</button>
+          <button type="button" class="pill-choice" data-value="lightweight">Lightweight</button>
+          <button type="button" class="pill-choice" data-value="standard">Standard</button>
+          <button type="button" class="pill-choice" data-value="heavy-ok">Heavy is Acceptable</button>
+        </div>
+      </div>
+    </div>
+    <div class="step-nav">
+      <button type="button" class="btn btn-secondary prev-step">Back</button>
+      <button type="submit" class="btn btn-primary" id="see-recommendations-btn">See my recommendations</button>
+    </div>
+  </section>
+
+</form>
+
+<script src="js/theme.js"></script>
+<script src="js/preferences.js"></script>
+</body>
+</html>

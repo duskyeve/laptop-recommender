@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GadgetLens — Find the laptop that fits your needs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .hero {
+    padding: var(--space-8) 0;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--space-7);
+    align-items: center;
+  }
+  .hero h1 { max-width: 15ch; }
+  .hero p.lede { font-size: 1.1rem; max-width: 46ch; }
+  .hero-actions { display: flex; gap: var(--space-3); margin-top: var(--space-5); flex-wrap: wrap; }
+  .hero-note { margin-top: var(--space-4); font-size: 0.85rem; color: var(--color-ink-faint); max-width: 46ch; }
+  .hero-panel {
+    background: var(--color-primary-dark);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    color: #f4f1ea;
+  }
+  .hero-panel ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-4); }
+  .hero-panel li { display: flex; gap: var(--space-3); }
+  .hero-panel .step-num { font-family: var(--font-display); font-size: 1.3rem; color: var(--color-accent); min-width: 1.4em; }
+  .hero-panel .step-text { color: #d6ddd9; font-size: 0.92rem; }
+  .value-strip { padding: var(--space-7) 0; border-top: 1px solid var(--color-border); }
+  .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: var(--space-5); margin-top: var(--space-6); }
+  .value-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
+  .value-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); }
+  .value-card h3 { font-size: 1.05rem; }
+  .site-footer { border-top: 1px solid var(--color-border); padding: var(--space-6) 0; font-size: 0.85rem; color: var(--color-ink-faint); text-align: center; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header container">
+  <a href="index.html" class="brand">Gadget<span class="brand__mark">Lens</span></a>
+  <nav class="site-nav">
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme="light">☀ Light</button>
+      <button type="button" data-theme="dark">◐ Dark</button>
+    </div>
+    <a href="login.html">Sign in</a>
+    <a href="register.html" class="btn btn-primary" style="padding:9px 18px;">Create free account</a>
+  </nav>
+</header>
+
+<section class="container hero">
+  <div>
+    <h1>Find the laptop that fits your needs.</h1>
+    <p class="lede">GadgetLens helps you discover laptops based on your budget, intended use, technical specifications, and personal priorities — not marketing or subjective reviews.</p>
+    <div class="hero-actions">
+      <button type="button" class="btn btn-primary" id="find-laptop-btn">Find My Laptop</button>
+      <button type="button" class="btn btn-secondary" id="continue-guest-btn">Continue as Guest</button>
+    </div>
+    <p class="hero-note">No account is required to get recommendations. Create an account only if you want GadgetLens to remember your laptops, preferences, and history.</p>
+  </div>
+
+  <div class="hero-panel">
+    <ol>
+      <li><span class="step-num">1</span><span class="step-text">Tell us what you need</span></li>
+      <li><span class="step-num">2</span><span class="step-text">Set your priorities</span></li>
+      <li><span class="step-num">3</span><span class="step-text">We compare specifications</span></li>
+      <li><span class="step-num">4</span><span class="step-text">Get explained recommendations</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="container value-strip">
+  <h2>Specifications first. Opinions later.</h2>
+  <p style="max-width:56ch;">You don't need to know what "refresh rate" or "VRAM" means to use GadgetLens. Ask our assistant if you're curious — otherwise, we translate your everyday needs into the technical details that actually matter.</p>
+
+  <div class="value-grid">
+    <div class="value-card">
+      <h3>Free to use</h3>
+      <p style="font-size:0.9rem;">Get a full set of recommendations as a guest — no sign-up, no paywall, no ads.</p>
+    </div>
+    <div class="value-card">
+      <h3>Your priorities, your ranking</h3>
+      <p style="font-size:0.9rem;">Two people with the same budget can get different results, based on what matters most to each of them.</p>
+    </div>
+    <div class="value-card">
+      <h3>Explained, not just scored</h3>
+      <p style="font-size:0.9rem;">Every recommendation — and every laptop that didn't make the cut — comes with a plain-language reason.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  GadgetLens — an academic Software Engineering prototype.
+</footer>
+
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

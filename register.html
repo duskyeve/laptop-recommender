@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create your account — GadgetLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+
+<div class="auth-topbar">
+  <div class="theme-toggle" role="group" aria-label="Theme">
+    <button type="button" data-theme="light">☀ Light</button>
+    <button type="button" data-theme="dark">◐ Dark</button>
+  </div>
+</div>
+
+<div class="auth-screen">
+
+  <aside class="auth-panel">
+    <a href="index.html" class="auth-panel__brand">Gadget<span class="brand__mark">Lens</span></a>
+    <div class="auth-panel__body">
+      <h1>Free to use. Free to keep.</h1>
+      <p>You don't need an account to get recommendations — create one only if you want GadgetLens to remember your laptops, preferences, and history.</p>
+      <ul class="auth-panel__specs">
+        <li><span class="value">✓</span> Save laptops you like</li>
+        <li><span class="value">✓</span> Keep your preferences</li>
+        <li><span class="value">✓</span> Share feedback with us</li>
+      </ul>
+    </div>
+    <p class="auth-panel__foot">Frontend prototype · No real authentication yet</p>
+  </aside>
+
+  <main class="auth-form-side">
+    <div class="auth-card">
+      <a href="index.html" class="auth-card__mobile-brand">Gadget<span class="brand__mark">Lens</span></a>
+
+      <h1>Create your account</h1>
+      <p class="auth-subtitle">It's free — no card, no plans.</p>
+
+      <form id="register-form" novalidate>
+        <div class="field" id="username-field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" autocomplete="username" required minlength="3" />
+          <p class="field-error" id="username-error">Username must be at least 3 characters.</p>
+        </div>
+
+        <div class="field" id="password-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" required />
+        </div>
+
+        <div class="pw-strength">
+          <div class="pw-strength__bar"><div class="pw-strength__fill" id="pw-strength-fill"></div></div>
+          <span class="pw-strength__label" id="pw-strength-label">Password strength</span>
+        </div>
+
+        <ul class="pw-requirements" id="pw-requirements">
+          <li data-rule="length">At least 8 characters</li>
+          <li data-rule="number">At least one number</li>
+          <li data-rule="uppercase">At least one uppercase letter</li>
+        </ul>
+
+        <div class="field" id="confirm-field">
+          <label for="confirm-password">Confirm password</label>
+          <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" required />
+          <p class="field-error" id="confirm-error">Passwords don't match.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Create Free Account</button>
+      </form>
+
+      <div class="auth-card__divider">or</div>
+
+      <button type="button" class="btn btn-secondary btn-block" id="guest-btn">Continue as Guest</button>
+
+      <p class="auth-card__footlink">Already have an account? <a href="login.html">Sign in</a></p>
+    </div>
+  </main>
+
+</div>
+
+<script src="js/theme.js"></script>
+<script src="js/register.js"></script>
+</body>
+</html>

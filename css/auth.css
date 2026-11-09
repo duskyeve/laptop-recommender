@@ -1,0 +1,106 @@
+/* =========================================================
+   auth.css — Shared layout for login.html and register.html.
+   Split-screen: brand panel (left) + form card (right).
+   ========================================================= */
+
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-topbar {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-5);
+  z-index: 5;
+}
+
+/* ---------- Left brand panel ---------- */
+.auth-panel {
+  background: var(--color-primary-dark);
+  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.06), transparent 45%),
+                     radial-gradient(circle at 85% 80%, rgba(201, 122, 59, 0.18), transparent 50%);
+  color: #f4f1ea;
+  padding: var(--space-8) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-panel__brand {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+}
+.auth-panel__brand .brand__mark { color: var(--color-accent); }
+
+.auth-panel__body h1 {
+  color: #fff;
+  font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.6rem);
+  max-width: 12ch;
+}
+
+.auth-panel__body p { color: #cfd8d2; max-width: 34ch; font-size: 1.05rem; }
+
+.auth-panel__specs { list-style: none; margin: var(--space-6) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.auth-panel__specs li { display: flex; align-items: baseline; gap: var(--space-3); color: #e4e9e6; font-size: 0.95rem; border-top: 1px solid rgba(244, 241, 234, 0.14); padding-top: var(--space-3); }
+.auth-panel__specs span.value { font-family: var(--font-display); font-size: 1.1rem; color: var(--color-accent); min-width: 3ch; }
+
+.auth-panel__foot { font-size: 0.8rem; color: #9fada6; }
+
+/* ---------- Right: form side ---------- */
+.auth-form-side { display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+}
+
+.auth-card__mobile-brand { display: none; font-family: var(--font-display); font-weight: 600; color: var(--color-primary-dark); text-decoration: none; margin-bottom: var(--space-5); }
+[data-theme="dark"] .auth-card__mobile-brand { color: var(--color-ink); }
+
+.auth-card h1 { font-size: 1.6rem; margin-bottom: var(--space-2); }
+.auth-card > p.auth-subtitle { font-size: 0.95rem; margin-bottom: var(--space-6); }
+.auth-card .field { text-align: left; }
+
+.auth-card__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  color: var(--color-ink-faint);
+  font-size: 0.8rem;
+}
+.auth-card__divider::before, .auth-card__divider::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
+
+.auth-card__footlink { margin-top: var(--space-5); font-size: 0.88rem; color: var(--color-ink-soft); }
+
+/* ---------- Password strength (used on register.html) ---------- */
+.pw-strength { margin-top: -8px; margin-bottom: var(--space-5); }
+.pw-strength__bar { height: 6px; border-radius: 999px; background: var(--color-border); overflow: hidden; margin-bottom: var(--space-2); }
+.pw-strength__fill { height: 100%; width: 0%; background: var(--color-danger); border-radius: 999px; transition: width 160ms ease, background-color 160ms ease; }
+.pw-strength__label { font-size: 0.8rem; font-weight: 600; color: var(--color-ink-soft); }
+
+.pw-requirements { list-style: none; padding: 0; margin: var(--space-2) 0 var(--space-5); font-size: 0.82rem; color: var(--color-ink-faint); display: flex; flex-direction: column; gap: 4px; }
+.pw-requirements li { display: flex; align-items: center; gap: 8px; }
+.pw-requirements li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--color-ink-faint); flex: none; }
+.pw-requirements li.met { color: var(--color-good); }
+.pw-requirements li.met::before { background: var(--color-good); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 880px) {
+  .auth-screen { grid-template-columns: 1fr; }
+  .auth-panel { display: none; }
+  .auth-card__mobile-brand { display: inline-block; }
+  .auth-form-side { padding: var(--space-5); }
+  .auth-topbar { position: static; display: flex; justify-content: flex-end; padding: var(--space-4) var(--space-5) 0; }
+}

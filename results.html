@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Laptop Matches — GadgetLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/results.css" />
+</head>
+<body>
+
+<header class="dash-header container">
+  <a href="index.html" class="brand">Gadget<span class="brand__mark">Lens</span></a>
+
+  <button type="button" class="btn btn-secondary dash-filters-toggle" id="filters-toggle">Filters</button>
+
+  <div class="dash-search">
+    <input type="text" placeholder="Search laptops, brands, specs..." aria-label="Search" />
+  </div>
+
+  <div class="dash-header__actions">
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme="light">☀ Light</button>
+      <button type="button" data-theme="dark">◐ Dark</button>
+    </div>
+    <button type="button" class="dash-header__link" id="saved-link">Saved</button>
+    <button type="button" class="dash-header__link" id="feedback-link">Give feedback</button>
+    <button type="button" class="dash-header__link" id="edit-preferences-link">Edit preferences</button>
+    <span id="session-badge" style="display:flex; align-items:center; gap:var(--space-3);"></span>
+  </div>
+</header>
+
+<div class="container results-hero">
+  <h1>Your Laptop Matches</h1>
+  <p>Based on your budget, needs, and priorities.</p>
+
+  <p class="prototype-note">
+    Frontend prototype: the match scores, rankings, and explanations below are placeholder data for demonstrating the interface. The deterministic filtering and ranking engine described in the project brief has not been built yet — it will be designed separately and implemented in Flask.
+  </p>
+
+  <div class="results-summary" id="results-summary"><!-- Populated by results.js from stored preferences --></div>
+</div>
+
+<div class="container dash-layout">
+
+  <aside class="dash-filters" id="dash-filters">
+    <button type="button" class="dash-filters__close" id="filters-close" aria-label="Close filters">✕</button>
+    <h2>Filters</h2>
+
+    <div class="filter-group">
+      <h3>Brand</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> Nordic</label>
+        <label class="filter-option"><input type="checkbox" /> Atlas</label>
+        <label class="filter-option"><input type="checkbox" /> Forge</label>
+        <label class="filter-option"><input type="checkbox" /> Kestrel</label>
+        <label class="filter-option"><input type="checkbox" /> Pioneer</label>
+        <label class="filter-option"><input type="checkbox" /> Willow</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Processor</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> Entry-level</label>
+        <label class="filter-option"><input type="checkbox" /> Mid-range</label>
+        <label class="filter-option"><input type="checkbox" /> High-performance</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>RAM</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> 8 GB</label>
+        <label class="filter-option"><input type="checkbox" /> 16 GB</label>
+        <label class="filter-option"><input type="checkbox" /> 32 GB+</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Storage</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> 256 GB</label>
+        <label class="filter-option"><input type="checkbox" /> 512 GB</label>
+        <label class="filter-option"><input type="checkbox" /> 1 TB+</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>GPU</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> Integrated</label>
+        <label class="filter-option"><input type="checkbox" /> Dedicated</label>
+        <label class="filter-option"><input type="checkbox" /> High-performance dedicated</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Display type</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> IPS</label>
+        <label class="filter-option"><input type="checkbox" /> OLED</label>
+        <label class="filter-option"><input type="checkbox" /> Other</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Refresh rate</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> 60 Hz</label>
+        <label class="filter-option"><input type="checkbox" /> 90 Hz+</label>
+        <label class="filter-option"><input type="checkbox" /> 120 Hz+</label>
+        <label class="filter-option"><input type="checkbox" /> 144 Hz+</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Operating system</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> Windows</label>
+        <label class="filter-option"><input type="checkbox" /> Linux</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Weight</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> Lightweight</label>
+        <label class="filter-option"><input type="checkbox" /> Standard</label>
+        <label class="filter-option"><input type="checkbox" /> Heavy</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Upgradeability</h3>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" /> RAM upgradeable</label>
+        <label class="filter-option"><input type="checkbox" /> Storage upgradeable</label>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button type="button" class="btn btn-secondary" id="reset-filters-btn">Reset Filters</button>
+      <button type="button" class="btn btn-primary" id="apply-filters-btn">Apply Filters</button>
+    </div>
+    <!-- Filters are inert against the mock dataset in this prototype
+         (aside from Reset, which really clears the checkboxes).
+         Real filtering happens against the database once Flask
+         and MySQL are connected. -->
+  </aside>
+
+  <main class="dash-results">
+    <div class="dash-results__head">
+      <h2 style="margin-bottom:0;">Recommended for you</h2>
+      <span class="dash-results__count" id="results-count">6 laptops matched</span>
+    </div>
+
+    <div class="laptop-grid" id="laptop-grid">
+      <!-- Laptop cards are rendered by results.js from mock data -->
+    </div>
+  </main>
+
+</div>
+
+<!-- Compare tray -->
+<div class="compare-tray" id="compare-tray">
+  <span id="compare-tray-label">0 selected</span>
+  <button type="button" class="btn btn-primary" id="compare-tray-btn">Compare</button>
+</div>
+
+<!-- Generic modal: Why this / Why not / Compare / Laptop details / Saved list -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card" id="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button type="button" class="modal-close" id="modal-close" aria-label="Close">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- Guest gate: Save -->
+<div class="modal-overlay" id="save-gate-overlay">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="save-gate-title">
+    <button type="button" class="modal-close" id="save-gate-close" aria-label="Close">✕</button>
+    <h2 id="save-gate-title">Want to save this laptop?</h2>
+    <p>Create a free account to save laptops and access them later. Comparing laptops still works without an account.</p>
+    <div class="modal-actions">
+      <a href="register.html" class="btn btn-primary btn-block">Create Free Account</a>
+      <a href="login.html" class="btn btn-secondary btn-block">Sign In</a>
+      <button type="button" class="btn-text" id="continue-comparing-btn">Continue Comparing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guest gate: Feedback -->
+<div class="modal-overlay" id="feedback-gate-overlay">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="feedback-gate-title">
+    <button type="button" class="modal-close" id="feedback-gate-close" aria-label="Close">✕</button>
+    <h2 id="feedback-gate-title">Sign in to share feedback</h2>
+    <p>Website feedback helps us improve GadgetLens. Sign in or create a free account to leave yours.</p>
+    <div class="modal-actions">
+      <a href="login.html" class="btn btn-primary btn-block">Sign In</a>
+      <a href="register.html" class="btn btn-secondary btn-block">Create Free Account</a>
+    </div>
+  </div>
+</div>
+
+<!-- Website feedback form (signed-in users only) -->
+<div class="modal-overlay" id="feedback-overlay">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+    <button type="button" class="modal-close" id="feedback-close" aria-label="Close">✕</button>
+    <h2 id="feedback-title">Website feedback</h2>
+    <p style="font-size:0.88rem;">This is about your experience using GadgetLens itself — not a review of any laptop. It's never used to influence recommendation rankings.</p>
+
+    <form id="feedback-form">
+      <div class="feedback-question" data-question="easeOfUse">
+        <p>How easy was the website to use?</p>
+        <div class="feedback-scale"></div>
+      </div>
+      <div class="feedback-question" data-question="explanationClarity">
+        <p>Were our explanations easy to understand?</p>
+        <div class="feedback-scale"></div>
+      </div>
+      <div class="feedback-question" data-question="recommendationUsefulness">
+        <p>How useful were the recommendations?</p>
+        <div class="feedback-scale"></div>
+      </div>
+      <div class="feedback-question" data-question="filteringEase">
+        <p>Was the filtering process helpful?</p>
+        <div class="feedback-scale"></div>
+      </div>
+      <div class="feedback-question" data-question="overallExperience">
+        <p>Overall, how would you rate your experience?</p>
+        <div class="feedback-scale"></div>
+      </div>
+
+      <div class="field">
+        <label for="feedback-comment">Optional comment</label>
+        <textarea id="feedback-comment" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Send feedback</button>
+      <p class="feedback-success" id="feedback-success">Thanks — your feedback helps us improve GadgetLens.</p>
+    </form>
+  </div>
+</div>
+
+<!-- Floating AI chatbot -->
+<button type="button" class="chatbot-launcher" id="chatbot-launcher" aria-label="Open GadgetLens assistant">💬</button>
+
+<div class="chatbot-panel" id="chatbot-panel">
+  <div class="chatbot-panel__head">
+    <span>GadgetLens Assistant</span>
+    <button type="button" id="chatbot-close" aria-label="Close assistant">✕</button>
+  </div>
+  <div class="chatbot-panel__body" id="chatbot-body">
+    <div class="chat-msg chat-msg--bot">Hi! Ask me about laptop specifications — things like RAM, SSD, or refresh rate. I can't tell you which laptop to buy, but I can help you understand the specs.</div>
+  </div>
+  <form class="chatbot-panel__form" id="chatbot-form">
+    <input type="text" id="chatbot-input" placeholder="Ask a question..." autocomplete="off" />
+    <button type="submit" aria-label="Send">➤</button>
+  </form>
+</div>
+
+<div class="term-tooltip" id="term-tooltip" role="tooltip"></div>
+
+<script src="js/theme.js"></script>
+<script src="js/results.js"></script>
+</body>
+</html>
