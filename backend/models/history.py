@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
-from ..extensions import db
+try:
+    from extensions import db
+except ImportError:
+    from ..extensions import db
 
 class RecommendationHistory(db.Model):
     __tablename__ = "recommendation_history"
@@ -10,3 +13,11 @@ class RecommendationHistory(db.Model):
     search_parameters = db.Column(db.JSON, nullable=False)
 
     user = db.relationship("User", back_populates="recommendation_history")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "search_parameters": self.search_parameters
+        }

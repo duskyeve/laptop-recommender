@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
-from ..extensions import db
+try:
+    from extensions import db
+except ImportError:
+    from ..extensions import db
 
 class WebsiteFeedback(db.Model):
     __tablename__ = "website_feedback"
@@ -15,3 +18,16 @@ class WebsiteFeedback(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     user = db.relationship("User", back_populates="feedback")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "ease_of_use": self.ease_of_use,
+            "explanation_clarity": self.explanation_clarity,
+            "recommendation_usefulness": self.recommendation_usefulness,
+            "filtering_ease": self.filtering_ease,
+            "overall_experience": self.overall_experience,
+            "comment": self.comment,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }

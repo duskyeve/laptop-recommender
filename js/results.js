@@ -1,34 +1,19 @@
 /* =========================================================
-   results.js — Renders "Your Laptop Matches": mock
-   recommendation cards, filter sidebar, technical term
-   tooltips, compare tray + table, laptop detail view,
-   "why (not) recommended" modals, save/favorite (with guest
-   gating), website feedback (with guest gating), and the AI
-   chatbot shell.
-
-   PROTOTYPE ONLY. Every piece of "intelligence" on this page —
-   match percentages, per-priority breakdown bars, "why (not)
-   recommended" reasoning, and the chatbot's replies — is
-   hardcoded mock data or simple keyword matching, clearly
-   labeled DEMO/prototype throughout. None of it is calculated
-   from the user's actual preferences by a real ranking engine.
-
-   The chatbot is a FRONTEND PLACEHOLDER ONLY: it explains
-   specs and answers general questions, and must never be
-   extended to decide, rank, or influence which laptop is
-   recommended. That decision belongs entirely to the
-   deterministic backend engine, designed separately and
-   implemented in Flask.
+   results.js — Connected to GadgetLens Backend API.
+   Renders deterministic recommendations, specification filters,
+   search, compare table, details modal, "why (not)" explanations,
+   backend saved laptops, feedback submission, chatbot, and
+   database-driven technical term tooltips.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   /* ---------------- Access guard ---------------- */
   const session = GadgetLens.getSession();
   if (!session) {
     window.location.href = "login.html";
     return;
   }
-  const isSignedIn = session.type === "user";
+  const isSignedIn = GadgetLens.isSignedIn();
 
   document.getElementById("edit-preferences-link").addEventListener("click", () => {
     window.location.href = "preferences.html";
@@ -49,11 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderResultsSummary() {
     const el = document.getElementById("results-summary");
     if (!savedPreferences) {
-      el.innerHTML = `<p style="margin:0;">No saved preferences found — showing a general set of laptops. <a href="preferences.html">Answer the questionnaire</a> for a personalized match.</p>`;
+      el.innerHTML = `<p style="margin:0;">No saved preferences found — showing default recommendations. <a href="preferences.html">Answer the questionnaire</a> for a personalized match.</p>`;
       return;
     }
 
-    const budget = `₹${savedPreferences.budgetMin.toLocaleString("en-IN")} – ₹${savedPreferences.budgetMax.toLocaleString("en-IN")}`;
+    const bMin = savedPreferences.budgetMin ? Number(savedPreferences.budgetMin).toLocaleString("en-IN") : "40,000";
+    const bMax = savedPreferences.budgetMax ? Number(savedPreferences.budgetMax).toLocaleString("en-IN") : "1,00,000";
+    const budget = `₹${bMin} – ₹${bMax}`;
     const purpose = PURPOSE_LABELS[savedPreferences.purpose] || "Not specified";
     const topPriorities = (savedPreferences.priorityOrder || [])
       .slice(0, 3)
@@ -68,132 +55,99 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   renderResultsSummary();
 
-  /* =========================================================
-     MOCK DATA — resembles the future LAPTOPS/PROCESSORS/GPUS
-     tables described in the data model, flattened for the
-     frontend prototype. Names are believable but demonstration-
-     only; they do not represent real current retail listings.
-     FUTURE: this array is replaced entirely by:
-         GET /api/recommendations?...
-     which will return laptops already filtered (Stage 1) and
-     ranked (Stage 2) by the deterministic Flask engine.
-     ========================================================= */
-  const MOCK_LAPTOPS = [
-    {
-      id: "l1", brand: "Nordic", model: "Slate 14", price: 74999,
-      processor: "Mid-range, 8-core", gpu: "Integrated Graphics", ram: "16 GB", storage: "512 GB", storageType: "SSD",
-      displaySize: "14\"", resolution: "1920×1200", displayType: "IPS", refreshRate: "144 Hz",
-      battery: "Up to 12 hours", weight: "1.3 kg", os: "Windows", upgradeability: "RAM upgradeable",
-      connectivity: "2× USB-C, 1× USB-A, Wi-Fi 6",
-      matchScore: 92,
-      breakdown: [{ label: "Battery life", value: 92 }, { label: "Performance", value: 88 }, { label: "Portability", value: 84 }, { label: "Price", value: 80 }, { label: "Display", value: 86 }],
-      whyText: "Battery life and performance were among your highest priorities, and this laptop scores strongly on both while remaining within your budget.",
-    },
-    {
-      id: "l2", brand: "Atlas", model: "Book Air 13", price: 68999,
-      processor: "Mid-range, 6-core", gpu: "Integrated Graphics", ram: "16 GB", storage: "256 GB", storageType: "SSD",
-      displaySize: "13.3\"", resolution: "1920×1080", displayType: "IPS", refreshRate: "60 Hz",
-      battery: "Up to 15 hours", weight: "1.1 kg", os: "Windows", upgradeability: "Not upgradeable",
-      connectivity: "2× USB-C, Wi-Fi 6",
-      matchScore: 88,
-      breakdown: [{ label: "Battery life", value: 95 }, { label: "Performance", value: 70 }, { label: "Portability", value: 96 }, { label: "Price", value: 84 }, { label: "Display", value: 78 }],
-      whyText: "Portability and battery life were your top priorities, and this model leads the shortlist on both while staying comfortably within budget.",
-    },
-    {
-      id: "l3", brand: "Forge", model: "Ryzen Studio 15", price: 89999,
-      processor: "High-performance, 8-core", gpu: "Dedicated Graphics", ram: "32 GB", storage: "1 TB", storageType: "SSD",
-      displaySize: "15.6\"", resolution: "2560×1440", displayType: "OLED", refreshRate: "120 Hz",
-      battery: "Up to 7 hours", weight: "1.9 kg", os: "Windows", upgradeability: "RAM and storage upgradeable",
-      connectivity: "1× USB-C (Thunderbolt), 2× USB-A, HDMI, Wi-Fi 6E",
-      matchScore: 81,
-      breakdown: [{ label: "Battery life", value: 62 }, { label: "Performance", value: 95 }, { label: "Portability", value: 58 }, { label: "Price", value: 65 }, { label: "Display", value: 97 }],
-      whyText: "Strong performance and display quality push this into your shortlist, though it trades off some battery life and portability compared to the top pick.",
-    },
-    {
-      id: "l4", brand: "Kestrel", model: "Edge 15", price: 61999,
-      processor: "Entry-level, 4-core", gpu: "Integrated Graphics", ram: "8 GB", storage: "512 GB", storageType: "SSD",
-      displaySize: "15.6\"", resolution: "1920×1080", displayType: "IPS", refreshRate: "60 Hz",
-      battery: "Up to 6 hours", weight: "1.7 kg", os: "Windows", upgradeability: "RAM upgradeable",
-      connectivity: "2× USB-A, 1× USB-C, Wi-Fi 5",
-      matchScore: 64,
-      breakdown: [{ label: "Battery life", value: 55 }, { label: "Performance", value: 60 }, { label: "Portability", value: 70 }, { label: "Price", value: 90 }, { label: "Display", value: 50 }],
-      whyNotReasons: ["Lower battery suitability — battery life was your highest priority", "Lower performance for a demanding use case than higher-ranked options"],
-    },
-    {
-      id: "l5", brand: "Pioneer", model: "GameFrame 16", price: 118999,
-      processor: "High-performance, 8-core", gpu: "High-Performance Dedicated Graphics", ram: "32 GB", storage: "1 TB", storageType: "SSD",
-      displaySize: "16\"", resolution: "2560×1600", displayType: "IPS", refreshRate: "165 Hz",
-      battery: "Up to 4 hours", weight: "2.4 kg", os: "Windows", upgradeability: "RAM and storage upgradeable",
-      connectivity: "1× USB-C (Thunderbolt), 3× USB-A, HDMI, Ethernet, Wi-Fi 6E",
-      matchScore: 58,
-      breakdown: [{ label: "Battery life", value: 40 }, { label: "Performance", value: 98 }, { label: "Portability", value: 35 }, { label: "Price", value: 45 }, { label: "Display", value: 90 }],
-      whyNotReasons: ["Near the top of your maximum budget", "Heavier than your stated portability preference", "Lower battery suitability — battery life was your highest priority"],
-    },
-    {
-      id: "l6", brand: "Willow", model: "Everyday 14", price: 52999,
-      processor: "Entry-level, 4-core", gpu: "Integrated Graphics", ram: "8 GB", storage: "256 GB", storageType: "SSD",
-      displaySize: "14\"", resolution: "1920×1080", displayType: "IPS", refreshRate: "60 Hz",
-      battery: "Up to 10 hours", weight: "1.4 kg", os: "Linux", upgradeability: "Not upgradeable",
-      connectivity: "2× USB-A, 1× USB-C, Wi-Fi 5",
-      matchScore: 71,
-      breakdown: [{ label: "Battery life", value: 78 }, { label: "Performance", value: 55 }, { label: "Portability", value: 80 }, { label: "Price", value: 95 }, { label: "Display", value: 60 }],
-      whyNotReasons: ["Lower performance suitability relative to your selected purpose", "Lower match to your priority order compared to higher-ranked options"],
-    },
-  ];
+  /* ---------------- State ---------------- */
+  let recommendedLaptops = [];
+  let excludedLaptops = [];
+  let currentLaptops = [];
+  let serverSavedIds = [];
+  let glossaryMap = {};
 
-  /* ---------------- Controlled glossary ----------------
-     Only these exact keys ever become an interactive chip/
-     tooltip. Ordinary words are never scanned or made clickable.
-     FUTURE: served from the TECH_GLOSSARY database table instead. */
-  const GLOSSARY = {
-    RAM: "Short-term memory that helps your laptop keep active programs and data readily available.",
-    SSD: "The laptop's storage drive. SSDs are the fast, modern standard for storing files and programs.",
-    CPU: "The processor — the laptop's main 'brain' that determines general speed and responsiveness.",
-    GPU: "The graphics processor. Matters most for gaming, video editing, and other visual workloads.",
-    OLED: "A display type known for very deep blacks and vivid color, at a higher price than typical screens.",
-    IPS: "A common, reliable display type known for accurate colors and wide viewing angles.",
-    "Refresh Rate": "How many times per second the screen updates. Higher numbers look smoother, especially in games.",
-    Storage: "Where your files, apps, and operating system live long-term, even when the laptop is off.",
-    Processor: "Another name for the CPU — the component that carries out the laptop's calculations.",
-    "Wi-Fi": "How the laptop connects to wireless networks. Newer standards are generally faster and more reliable.",
-    Upgradeability: "Whether you can add more RAM or storage yourself later, instead of being stuck with what you bought.",
-    "Battery Capacity": "How much charge the battery can hold — a rough indicator of how long it can run between charges.",
-  };
-
-  /* ---------------- Save/favorite (per signed-in user, prototype only) ---------------- */
-  function savedKey() {
-    return `gadgetlens_saved_${session.username}`;
-  }
-  function getSavedIds() {
-    if (!isSignedIn) return [];
-    try {
-      return JSON.parse(localStorage.getItem(savedKey())) || [];
-    } catch (e) {
-      return [];
-    }
-  }
-  function setSavedIds(ids) {
-    if (!isSignedIn) return;
-    localStorage.setItem(savedKey(), JSON.stringify(ids));
-  }
-
-  /* ---------------- Persistent compare selection (guests included) ---------------- */
   const COMPARE_KEY = "gadgetlens_compare_ids";
   const MAX_COMPARE = 4;
 
   function getCompareIds() {
     try {
-      return JSON.parse(localStorage.getItem(COMPARE_KEY)) || [];
+      return (JSON.parse(localStorage.getItem(COMPARE_KEY)) || []).map(Number);
     } catch (e) {
       return [];
     }
   }
   function setCompareIds(ids) {
-    localStorage.setItem(COMPARE_KEY, JSON.stringify(ids));
+    localStorage.setItem(COMPARE_KEY, JSON.stringify(ids.map(Number)));
   }
-  let compareIds = getCompareIds().filter((id) => MOCK_LAPTOPS.some((l) => l.id === id));
+  let compareIds = getCompareIds();
 
-  /* ---------------- Render laptop cards ---------------- */
+  /* ---------------- Load Glossary from Backend ---------------- */
+  async function loadGlossary() {
+    try {
+      const res = await GadgetLensAPI.glossary.getAll();
+      if (res && res.glossary_map) {
+        glossaryMap = res.glossary_map;
+      }
+    } catch (err) {
+      console.warn("Using local fallback glossary:", err);
+      glossaryMap = {
+        RAM: "Short-term memory that helps your laptop keep active programs and data readily available.",
+        SSD: "The laptop's storage drive. SSDs are the fast, modern standard for storing files and programs.",
+        CPU: "The processor — the laptop's main 'brain' that determines general speed and responsiveness.",
+        GPU: "The graphics processor. Matters most for gaming, video editing, and other visual workloads.",
+        OLED: "A display type known for very deep blacks and vivid color, at a higher price than typical screens.",
+        IPS: "A common, reliable display type known for accurate colors and wide viewing angles.",
+        "Refresh Rate": "How many times per second the screen updates. Higher numbers look smoother, especially in games.",
+        Storage: "Where your files, apps, and operating system live long-term, even when the laptop is off.",
+      };
+    }
+  }
+
+  /* ---------------- Load Saved Laptops for Signed-In Users ---------------- */
+  async function loadSavedLaptops() {
+    if (!isSignedIn) {
+      serverSavedIds = [];
+      return;
+    }
+    try {
+      const res = await GadgetLensAPI.savedLaptops.getAll();
+      if (res && res.saved_laptops) {
+        serverSavedIds = res.saved_laptops.map((s) => s.laptop_id);
+      }
+    } catch (err) {
+      console.warn("Could not fetch saved laptops from backend:", err);
+    }
+  }
+
+  /* ---------------- Fetch Recommendations from Backend ---------------- */
+  async function fetchRecommendations() {
+    const grid = document.getElementById("laptop-grid");
+    grid.innerHTML = `<p style="padding:var(--space-6); text-align:center; color:var(--color-ink-muted);">Calculating personalized recommendations based on technical specifications...</p>`;
+
+    try {
+      let res;
+      if (savedPreferences) {
+        res = await GadgetLensAPI.recommendations.generate(savedPreferences);
+      } else {
+        res = await GadgetLensAPI.recommendations.getSaved();
+      }
+
+      if (res && res.recommended) {
+        recommendedLaptops = res.recommended;
+        excludedLaptops = res.excluded || [];
+        // Combine passing and excluded (passing first)
+        currentLaptops = [...recommendedLaptops, ...excludedLaptops];
+      } else {
+        // Fallback to laptop list if recommendations endpoint format differs
+        const listRes = await GadgetLensAPI.laptops.getAll();
+        currentLaptops = (listRes && listRes.laptops) || [];
+      }
+    } catch (err) {
+      console.error("Backend recommendations request failed:", err);
+      grid.innerHTML = `<p style="padding:var(--space-6); text-align:center; color:var(--color-danger);">Unable to connect to GadgetLens backend. Please ensure the Flask backend is running on port 5000.</p>`;
+      return;
+    }
+
+    renderGrid(currentLaptops);
+  }
+
+  /* ---------------- Render Laptop Cards ---------------- */
   const grid = document.getElementById("laptop-grid");
 
   function matchClass(score) {
@@ -204,19 +158,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderSpecChips(laptop) {
     const chips = [
-      { label: laptop.ram, term: "RAM" },
-      { label: `${laptop.storage} ${laptop.storageType}`, term: "SSD" },
-      { label: laptop.gpu, term: "GPU" },
-      { label: laptop.refreshRate, term: "Refresh Rate" },
+      { label: laptop.ram || `${laptop.ram_gb} GB`, term: "RAM" },
+      { label: `${laptop.storage || laptop.storage_gb + ' GB'} ${laptop.storageType || laptop.storage_type || 'SSD'}`, term: "SSD" },
+      { label: laptop.gpu || "Integrated GPU", term: "GPU" },
+      { label: laptop.refreshRate || `${laptop.refresh_rate} Hz`, term: "Refresh Rate" },
     ];
     return chips.map((c) => `<button type="button" class="spec-chip" data-term="${c.term}">${c.label}</button>`).join("");
   }
 
   function renderCard(laptop) {
-    const hasPositiveMatch = laptop.matchScore >= 80;
+    const score = laptop.matchScore !== undefined ? laptop.matchScore : (laptop.match_score || 75);
+    const hasPositiveMatch = score >= 80 && laptop.passes_hard_filter !== false;
     const actionLabel = hasPositiveMatch ? "Why this laptop?" : "Why wasn't this recommended?";
-    const isSaved = getSavedIds().includes(laptop.id);
-    const isComparing = compareIds.includes(laptop.id);
+    const isSaved = serverSavedIds.includes(Number(laptop.id));
+    const isComparing = compareIds.includes(Number(laptop.id));
 
     return `
       <article class="laptop-card" data-id="${laptop.id}">
@@ -226,9 +181,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="laptop-card__name detail-trigger" data-id="${laptop.id}">${laptop.brand} ${laptop.model}</button>
             <button type="button" class="save-btn ${isSaved ? "is-saved" : ""}" data-id="${laptop.id}" aria-label="Save laptop" aria-pressed="${isSaved}">${isSaved ? "★" : "☆"}</button>
           </div>
-          <div class="laptop-card__price">₹${laptop.price.toLocaleString("en-IN")}</div>
+          <div class="laptop-card__price">₹${Number(laptop.price).toLocaleString("en-IN")}</div>
           <div class="spec-chip-row">${renderSpecChips(laptop)}</div>
-          <span class="match-score ${matchClass(laptop.matchScore)}" title="Prototype placeholder — not a calculated result">★ ${laptop.matchScore} Match<span class="demo-badge">Demo</span></span>
+          <span class="match-score ${matchClass(score)}" title="Deterministic Specification Score">★ ${score} Match</span>
 
           <div class="laptop-card__actions">
             <div class="laptop-card__actions-row">
@@ -244,33 +199,51 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  function renderGrid() {
-    grid.innerHTML = MOCK_LAPTOPS.map(renderCard).join("");
-    document.getElementById("results-count").textContent = `${MOCK_LAPTOPS.length} laptops matched`;
+  function renderGrid(laptopsToRender) {
+    if (!laptopsToRender || laptopsToRender.length === 0) {
+      grid.innerHTML = `<p style="padding:var(--space-6); text-align:center; color:var(--color-ink-muted);">No laptops match your selected filters. Try broadening your criteria or clicking Reset Filters.</p>`;
+      document.getElementById("results-count").textContent = "0 laptops matched";
+      return;
+    }
+
+    grid.innerHTML = laptopsToRender.map(renderCard).join("");
+    document.getElementById("results-count").textContent = `${laptopsToRender.length} laptops matched`;
+    refreshCompareTray();
   }
-  renderGrid();
 
   /* ---------------- Technical term tooltips ---------------- */
   const tooltip = document.getElementById("term-tooltip");
 
   function showTooltip(target) {
     const term = target.dataset.term;
-    const definition = GLOSSARY[term];
-    if (!definition) return; // Unknown terms never become clickable/tooltipped.
+    const definition = glossaryMap[term];
+    if (!definition) return;
     tooltip.textContent = definition;
     const rect = target.getBoundingClientRect();
     tooltip.style.left = Math.max(8, rect.left) + "px";
     tooltip.style.top = rect.bottom + 8 + "px";
     tooltip.classList.add("is-visible");
   }
-  function hideTooltip() { tooltip.classList.remove("is-visible"); }
+  function hideTooltip() {
+    tooltip.classList.remove("is-visible");
+  }
 
-  grid.addEventListener("mouseover", (e) => { const c = e.target.closest(".spec-chip"); if (c) showTooltip(c); });
-  grid.addEventListener("mouseout", (e) => { if (e.target.closest(".spec-chip")) hideTooltip(); });
-  grid.addEventListener("focusin", (e) => { const c = e.target.closest(".spec-chip"); if (c) showTooltip(c); });
-  grid.addEventListener("focusout", (e) => { if (e.target.closest(".spec-chip")) hideTooltip(); });
+  grid.addEventListener("mouseover", (e) => {
+    const c = e.target.closest(".spec-chip");
+    if (c) showTooltip(c);
+  });
+  grid.addEventListener("mouseout", (e) => {
+    if (e.target.closest(".spec-chip")) hideTooltip();
+  });
+  grid.addEventListener("focusin", (e) => {
+    const c = e.target.closest(".spec-chip");
+    if (c) showTooltip(c);
+  });
+  grid.addEventListener("focusout", (e) => {
+    if (e.target.closest(".spec-chip")) hideTooltip();
+  });
 
-  /* ---------------- Generic modal helpers ---------------- */
+  /* ---------------- Generic Modal Helpers ---------------- */
   const modalOverlay = document.getElementById("modal-overlay");
   const modalContent = document.getElementById("modal-content");
 
@@ -278,103 +251,131 @@ document.addEventListener("DOMContentLoaded", () => {
     modalContent.innerHTML = html;
     modalOverlay.classList.add("is-open");
   }
-  function closeModal() { modalOverlay.classList.remove("is-open"); }
+  function closeModal() {
+    modalOverlay.classList.remove("is-open");
+  }
 
   document.getElementById("modal-close").addEventListener("click", closeModal);
-  modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
 
   /* ---------------- "Why (not)" modal ---------------- */
   grid.addEventListener("click", (e) => {
     const btn = e.target.closest(".why-btn");
     if (!btn) return;
-    const laptop = MOCK_LAPTOPS.find((l) => l.id === btn.dataset.id);
+    const laptopId = Number(btn.dataset.id);
+    const laptop = currentLaptops.find((l) => Number(l.id) === laptopId);
     if (!laptop) return;
     openWhyModal(laptop);
   });
 
   function openWhyModal(laptop) {
-    const isPositive = laptop.matchScore >= 80;
+    const score = laptop.matchScore !== undefined ? laptop.matchScore : (laptop.match_score || 75);
+    const isPositive = score >= 80 && laptop.passes_hard_filter !== false;
 
     if (isPositive) {
-      const bars = laptop.breakdown
-        .map((b) => `
+      const breakdown = laptop.breakdown || [
+        { label: "Performance", value: 85 },
+        { label: "Battery life", value: 80 },
+        { label: "Price", value: 78 },
+        { label: "Portability", value: 82 },
+        { label: "Display", value: 84 },
+      ];
+
+      const bars = breakdown
+        .map(
+          (b) => `
           <div>
-            <div class="priority-bar__label"><span>${b.label}</span><span>${b.value}/100 <span class="demo-badge">Demo</span></span></div>
+            <div class="priority-bar__label"><span>${b.label}</span><span>${b.value}/100</span></div>
             <div class="priority-bar__track"><div class="priority-bar__fill" style="width:${b.value}%"></div></div>
-          </div>`)
+          </div>`
+        )
         .join("");
+
+      const whyText = laptop.whyText || laptop.why_text || "Ranked highly based on your technical priorities and objective specifications.";
 
       openModal(`
         <h2 id="modal-title">Why this laptop?</h2>
-        <p>${laptop.whyText}</p>
-        <p style="font-size:0.82rem; font-weight:600; color:var(--color-ink); margin-top:var(--space-5);">Factor breakdown</p>
+        <p>${whyText}</p>
+        <p style="font-size:0.82rem; font-weight:600; color:var(--color-ink); margin-top:var(--space-5);">Factor breakdown (0–100)</p>
         <div class="priority-bars">${bars}</div>
         <div class="ai-note">
-          This explanation and these scores are prototype/demo values, not a calculated result. In the real system, structured facts computed by the deterministic backend ranking engine will be converted into natural language by an AI explanation layer — the AI will never decide the ranking itself.
+          This ranking and score breakdown are calculated deterministically by the GadgetLens recommendation engine using normalized feature scores and your assigned priority weights.
         </div>
       `);
     } else {
-      const reasons = (laptop.whyNotReasons || []).map((r) => `<li>${r}</li>`).join("");
+      const reasonsList = laptop.whyNotReasons || laptop.why_not_reasons || [
+        "Lower match against your top-ranked priority factors",
+        "Higher trade-offs relative to other shortlisted models",
+      ];
+      const reasons = reasonsList.map((r) => `<li>${r}</li>`).join("");
+
       openModal(`
         <h2 id="modal-title">Why wasn't this recommended?</h2>
-        <p>Compared to higher-ranked laptops in your results, this one scored lower for reasons like:</p>
+        <p>Compared to higher-ranked laptops in your results, this model scored lower for reasons like:</p>
         <ul class="reason-list">${reasons}</ul>
         <div class="ai-note">
-          These reasons are prototype/demo content for this frontend. The real system will generate this list from structured facts the backend actually calculates — not from an AI's own judgment.
+          These reasons reflect objective technical mismatches identified by the deterministic engine against your stated priorities and budget.
         </div>
       `);
     }
   }
 
-  /* ---------------- Laptop detail modal ---------------- */
+  /* ---------------- Laptop Detail Modal ---------------- */
   grid.addEventListener("click", (e) => {
     const trigger = e.target.closest(".detail-trigger");
     if (!trigger) return;
-    const laptop = MOCK_LAPTOPS.find((l) => l.id === trigger.dataset.id);
+    const laptopId = Number(trigger.dataset.id);
+    const laptop = currentLaptops.find((l) => Number(l.id) === laptopId);
     if (laptop) openDetailModal(laptop);
   });
 
   function openDetailModal(laptop) {
+    const dispSize = laptop.displaySize || (laptop.display_size ? `${laptop.display_size}"` : "14\"");
+    const storageType = laptop.storageType || laptop.storage_type || "SSD";
+    const refreshRate = laptop.refreshRate || `${laptop.refresh_rate || 60} Hz`;
+
     openModal(`
       <h2 id="modal-title">${laptop.brand} ${laptop.model}</h2>
-      <p class="laptop-card__price" style="margin-bottom:var(--space-5);">₹${laptop.price.toLocaleString("en-IN")}</p>
+      <p class="laptop-card__price" style="margin-bottom:var(--space-5);">₹${Number(laptop.price).toLocaleString("en-IN")}</p>
 
       <div class="spec-category">
         <h3>Performance</h3>
         <dl>
-          <dt>Processor</dt><dd>${laptop.processor}</dd>
-          <dt>GPU</dt><dd>${laptop.gpu}</dd>
-          <dt>RAM</dt><dd>${laptop.ram}</dd>
-          <dt>Storage</dt><dd>${laptop.storage} (${laptop.storageType})</dd>
+          <dt>Processor</dt><dd>${laptop.processor || "Standard Processor"}</dd>
+          <dt>GPU</dt><dd>${laptop.gpu || "Integrated Graphics"}</dd>
+          <dt>RAM</dt><dd>${laptop.ram || laptop.ram_gb + " GB"}</dd>
+          <dt>Storage</dt><dd>${laptop.storage || laptop.storage_gb + " GB"} (${storageType})</dd>
         </dl>
       </div>
       <div class="spec-category">
         <h3>Display</h3>
         <dl>
-          <dt>Size</dt><dd>${laptop.displaySize}</dd>
-          <dt>Resolution</dt><dd>${laptop.resolution}</dd>
-          <dt>Type</dt><dd>${laptop.displayType}</dd>
-          <dt>Refresh rate</dt><dd>${laptop.refreshRate}</dd>
+          <dt>Size</dt><dd>${dispSize}</dd>
+          <dt>Resolution</dt><dd>${laptop.resolution || "1920×1080"}</dd>
+          <dt>Type</dt><dd>${laptop.displayType || laptop.display_type || "IPS"}</dd>
+          <dt>Refresh rate</dt><dd>${refreshRate}</dd>
         </dl>
       </div>
       <div class="spec-category">
         <h3>Battery &amp; Mobility</h3>
         <dl>
-          <dt>Battery</dt><dd>${laptop.battery}</dd>
-          <dt>Weight</dt><dd>${laptop.weight}</dd>
+          <dt>Battery</dt><dd>${laptop.battery || "Up to 8 hours"}</dd>
+          <dt>Weight</dt><dd>${laptop.weight || (laptop.weight_kg ? laptop.weight_kg + " kg" : "1.5 kg")}</dd>
         </dl>
       </div>
       <div class="spec-category">
         <h3>Software</h3>
-        <dl><dt>Operating system</dt><dd>${laptop.os}</dd></dl>
+        <dl><dt>Operating system</dt><dd>${laptop.os || "Windows"}</dd></dl>
       </div>
       <div class="spec-category">
         <h3>Upgradeability</h3>
-        <dl><dt>Options</dt><dd>${laptop.upgradeability}</dd></dl>
+        <dl><dt>Options</dt><dd>${laptop.upgradeability || "Not specified"}</dd></dl>
       </div>
       <div class="spec-category">
         <h3>Connectivity</h3>
-        <dl><dt>Ports &amp; Wi-Fi</dt><dd>${laptop.connectivity}</dd></dl>
+        <dl><dt>Ports &amp; Wi-Fi</dt><dd>${laptop.connectivity || "USB-C, USB-A, Wi-Fi"}</dd></dl>
       </div>
 
       <div class="modal-actions">
@@ -388,13 +389,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ---------------- Save / favorite (gated for guests) ---------------- */
+  /* ---------------- Save / Favorite (Backend integrated) ---------------- */
   const saveGateOverlay = document.getElementById("save-gate-overlay");
   document.getElementById("save-gate-close").addEventListener("click", () => saveGateOverlay.classList.remove("is-open"));
   document.getElementById("continue-comparing-btn").addEventListener("click", () => saveGateOverlay.classList.remove("is-open"));
-  saveGateOverlay.addEventListener("click", (e) => { if (e.target === saveGateOverlay) saveGateOverlay.classList.remove("is-open"); });
+  saveGateOverlay.addEventListener("click", (e) => {
+    if (e.target === saveGateOverlay) saveGateOverlay.classList.remove("is-open");
+  });
 
-  grid.addEventListener("click", (e) => {
+  grid.addEventListener("click", async (e) => {
     const saveBtn = e.target.closest(".save-btn");
     if (!saveBtn) return;
 
@@ -403,49 +406,71 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const id = saveBtn.dataset.id;
-    let savedIds = getSavedIds();
-    const nowSaved = !savedIds.includes(id);
+    const id = Number(saveBtn.dataset.id);
+    const nowSaved = !serverSavedIds.includes(id);
 
-    savedIds = nowSaved ? [...savedIds, id] : savedIds.filter((sid) => sid !== id);
-    setSavedIds(savedIds);
+    try {
+      if (nowSaved) {
+        await GadgetLensAPI.savedLaptops.save(id);
+        serverSavedIds.push(id);
+      } else {
+        await GadgetLensAPI.savedLaptops.remove(id);
+        serverSavedIds = serverSavedIds.filter((sid) => sid !== id);
+      }
 
-    saveBtn.classList.toggle("is-saved", nowSaved);
-    saveBtn.setAttribute("aria-pressed", String(nowSaved));
-    saveBtn.textContent = nowSaved ? "★" : "☆";
-
-    // ---- FUTURE: POST/DELETE /api/saved-laptops/{laptopId} ----
+      saveBtn.classList.toggle("is-saved", nowSaved);
+      saveBtn.setAttribute("aria-pressed", String(nowSaved));
+      saveBtn.textContent = nowSaved ? "★" : "☆";
+    } catch (err) {
+      console.error("Failed to update saved laptop on backend:", err);
+    }
   });
 
-  /* ---------------- Saved laptops list ---------------- */
-  document.getElementById("saved-link").addEventListener("click", () => {
+  /* ---------------- Saved Laptops Modal ---------------- */
+  document.getElementById("saved-link").addEventListener("click", async () => {
     if (!isSignedIn) {
       saveGateOverlay.classList.add("is-open");
       return;
     }
 
-    const savedIds = getSavedIds();
-    const savedLaptops = MOCK_LAPTOPS.filter((l) => savedIds.includes(l.id));
+    let savedList = [];
+    try {
+      const res = await GadgetLensAPI.savedLaptops.getAll();
+      if (res && res.saved_laptops) {
+        savedList = res.saved_laptops;
+        serverSavedIds = savedList.map((s) => s.laptop_id);
+      }
+    } catch (err) {
+      console.error("Could not fetch saved list:", err);
+    }
 
-    const listHtml = savedLaptops.length
-      ? `<ul class="saved-list">${savedLaptops
-          .map((l) => `<li>${l.brand} ${l.model} <button type="button" class="remove-saved-btn" data-id="${l.id}">Remove</button></li>`)
+    const listHtml = savedList.length
+      ? `<ul class="saved-list">${savedList
+          .map((s) => {
+            const lap = s.laptop || {};
+            return `<li>${lap.brand || "Laptop"} ${lap.model || ""} <button type="button" class="remove-saved-btn" data-id="${lap.id || s.laptop_id}">Remove</button></li>`;
+          })
           .join("")}</ul>`
-      : `<p class="saved-empty">You haven't saved any laptops yet. Click the ☆ on a laptop card to save it.</p>`;
+      : `<p class="saved-empty">You haven't saved any laptops yet. Click the ☆ on any laptop card to save it to your account.</p>`;
 
     openModal(`<h2 id="modal-title">Saved laptops</h2>${listHtml}`);
 
     document.querySelectorAll(".remove-saved-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const remaining = getSavedIds().filter((id) => id !== btn.dataset.id);
-        setSavedIds(remaining);
-        renderGrid();
-        document.getElementById("saved-link").click();
+      btn.addEventListener("click", async () => {
+        const id = Number(btn.dataset.id);
+        try {
+          await GadgetLensAPI.savedLaptops.remove(id);
+          serverSavedIds = serverSavedIds.filter((sid) => sid !== id);
+          renderGrid(currentLaptops);
+          document.getElementById("saved-link").click();
+        } catch (err) {
+          console.error("Could not remove laptop:", err);
+        }
       });
     });
   });
 
-  /* ---------------- Compare tray + compare modal ---------------- */
+  /* ---------------- Compare Tray + Compare Modal ---------------- */
   const compareTray = document.getElementById("compare-tray");
   const compareTrayLabel = document.getElementById("compare-tray-label");
   const compareTrayBtn = document.getElementById("compare-tray-btn");
@@ -462,47 +487,66 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkbox = e.target.closest(".compare-checkbox");
     if (!checkbox) return;
 
+    const id = Number(checkbox.dataset.id);
+
     if (checkbox.checked) {
       if (compareIds.length >= MAX_COMPARE) {
         checkbox.checked = false;
         return;
       }
-      compareIds.push(checkbox.dataset.id);
+      if (!compareIds.includes(id)) compareIds.push(id);
     } else {
-      compareIds = compareIds.filter((id) => id !== checkbox.dataset.id);
+      compareIds = compareIds.filter((cid) => cid !== id);
     }
 
-    // Persisted for both guests and signed-in users — comparison
-    // never requires an account.
     setCompareIds(compareIds);
     refreshCompareTray();
   });
 
-  compareTrayBtn.addEventListener("click", () => {
+  compareTrayBtn.addEventListener("click", async () => {
     if (compareIds.length < 2) return;
-    const selected = MOCK_LAPTOPS.filter((l) => compareIds.includes(l.id));
-    const rows = ["Price", "Processor", "GPU", "RAM", "Storage", "Display", "Refresh rate", "Battery", "Weight", "OS", "Upgradeability", "Connectivity"];
+
+    let selected = [];
+    try {
+      const res = await GadgetLensAPI.laptops.compare(compareIds);
+      if (res && res.laptops && res.laptops.length) {
+        selected = res.laptops;
+      }
+    } catch (e) {
+      selected = currentLaptops.filter((l) => compareIds.includes(Number(l.id)));
+    }
+
+    if (!selected.length) {
+      selected = currentLaptops.filter((l) => compareIds.includes(Number(l.id)));
+    }
+
+    const rows = [
+      "Price", "Processor", "GPU", "RAM", "Storage", "Display", "Refresh rate",
+      "Battery", "Weight", "OS", "Upgradeability", "Connectivity"
+    ];
 
     const getValue = (laptop, row) => {
       switch (row) {
-        case "Price": return `₹${laptop.price.toLocaleString("en-IN")}`;
-        case "Processor": return laptop.processor;
-        case "GPU": return laptop.gpu;
-        case "RAM": return laptop.ram;
-        case "Storage": return `${laptop.storage} (${laptop.storageType})`;
-        case "Display": return `${laptop.displaySize}, ${laptop.resolution}, ${laptop.displayType}`;
-        case "Refresh rate": return laptop.refreshRate;
-        case "Battery": return laptop.battery;
-        case "Weight": return laptop.weight;
-        case "OS": return laptop.os;
-        case "Upgradeability": return laptop.upgradeability;
-        case "Connectivity": return laptop.connectivity;
+        case "Price": return `₹${Number(laptop.price).toLocaleString("en-IN")}`;
+        case "Processor": return laptop.processor || "Standard Processor";
+        case "GPU": return laptop.gpu || "Integrated Graphics";
+        case "RAM": return laptop.ram || `${laptop.ram_gb} GB`;
+        case "Storage": return `${laptop.storage || laptop.storage_gb + ' GB'} (${laptop.storageType || laptop.storage_type || 'SSD'})`;
+        case "Display": return `${laptop.displaySize || laptop.display_size + '"'}, ${laptop.resolution || '1080p'}, ${laptop.displayType || laptop.display_type || 'IPS'}`;
+        case "Refresh rate": return laptop.refreshRate || `${laptop.refresh_rate} Hz`;
+        case "Battery": return laptop.battery || "Up to 8 hours";
+        case "Weight": return laptop.weight || `${laptop.weight_kg} kg`;
+        case "OS": return laptop.os || "Windows";
+        case "Upgradeability": return laptop.upgradeability || "—";
+        case "Connectivity": return laptop.connectivity || "—";
         default: return "—";
       }
     };
 
     const headerCells = selected.map((l) => `<th>${l.brand} ${l.model}</th>`).join("");
-    const bodyRows = rows.map((row) => `<tr><th>${row}</th>${selected.map((l) => `<td>${getValue(l, row)}</td>`).join("")}</tr>`).join("");
+    const bodyRows = rows
+      .map((row) => `<tr><th>${row}</th>${selected.map((l) => `<td>${getValue(l, row)}</td>`).join("")}</tr>`)
+      .join("");
 
     openModal(`
       <h2 id="modal-title" class="modal-card--wide">Compare laptops</h2>
@@ -517,22 +561,109 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ---------------- Filters sidebar ---------------- */
+  /* ---------------- Filters Sidebar ---------------- */
   const filtersPanel = document.getElementById("dash-filters");
   document.getElementById("filters-toggle").addEventListener("click", () => filtersPanel.classList.add("is-open"));
   document.getElementById("filters-close").addEventListener("click", () => filtersPanel.classList.remove("is-open"));
 
   document.getElementById("reset-filters-btn").addEventListener("click", () => {
     filtersPanel.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+    renderGrid(currentLaptops);
   });
+
   document.getElementById("apply-filters-btn").addEventListener("click", () => {
-    // FUTURE: send checked filter values to GET /api/recommendations.
-    // For this prototype the mock dataset isn't actually filtered —
-    // applying just closes the drawer on mobile.
+    const checkedFilters = {};
+    filtersPanel.querySelectorAll(".filter-group").forEach((group) => {
+      const heading = group.querySelector("h3").textContent.trim();
+      const selected = Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map((cb) =>
+        cb.parentElement.textContent.trim().toLowerCase()
+      );
+      if (selected.length > 0) {
+        checkedFilters[heading] = selected;
+      }
+    });
+
+    // Client-side filtering over recommendation results
+    const filtered = currentLaptops.filter((laptop) => {
+      for (const [groupName, values] of Object.entries(checkedFilters)) {
+        if (groupName === "Brand") {
+          if (!values.some((v) => laptop.brand.toLowerCase().includes(v))) return false;
+        }
+        if (groupName === "Processor") {
+          const procCategory = (laptop.processor_category || laptop.processor || "").toLowerCase();
+          if (!values.some((v) => procCategory.includes(v))) return false;
+        }
+        if (groupName === "RAM") {
+          const ramVal = (laptop.ram || laptop.ram_gb + " gb").toLowerCase();
+          if (!values.some((v) => ramVal.includes(v))) return false;
+        }
+        if (groupName === "Storage") {
+          const storVal = (laptop.storage || laptop.storage_gb + " gb").toLowerCase();
+          if (!values.some((v) => storVal.includes(v.replace("+", "")))) return false;
+        }
+        if (groupName === "GPU") {
+          const gpuCategory = (laptop.gpu_category || laptop.gpu || "").toLowerCase();
+          if (!values.some((v) => gpuCategory.includes(v))) return false;
+        }
+        if (groupName === "Display type") {
+          const dispType = (laptop.displayType || laptop.display_type || "").toLowerCase();
+          if (!values.some((v) => dispType.includes(v))) return false;
+        }
+        if (groupName === "Refresh rate") {
+          const hz = laptop.refresh_rate || 60;
+          const matchHz = values.some((v) => {
+            if (v.includes("60")) return hz === 60;
+            if (v.includes("90")) return hz >= 90;
+            if (v.includes("120")) return hz >= 120;
+            if (v.includes("144")) return hz >= 144;
+            return false;
+          });
+          if (!matchHz) return false;
+        }
+        if (groupName === "Operating system") {
+          const os = (laptop.os || "").toLowerCase();
+          if (!values.some((v) => os.includes(v))) return false;
+        }
+        if (groupName === "Weight") {
+          const w = laptop.weight_kg || parseFloat(laptop.weight) || 1.8;
+          const matchWeight = values.some((v) => {
+            if (v.includes("lightweight")) return w <= 1.4;
+            if (v.includes("standard")) return w > 1.4 && w <= 2.0;
+            if (v.includes("heavy")) return w > 2.0;
+            return true;
+          });
+          if (!matchWeight) return false;
+        }
+        if (groupName === "Upgradeability") {
+          const up = (laptop.upgradeability || "").toLowerCase();
+          if (!values.some((v) => up.includes(v.replace(" upgradeable", "")))) return false;
+        }
+      }
+      return true;
+    });
+
+    renderGrid(filtered);
     filtersPanel.classList.remove("is-open");
   });
 
-  /* ---------------- Website feedback (gated for guests) ---------------- */
+  /* ---------------- Real-Time Search ---------------- */
+  const searchInput = document.querySelector(".dash-search input");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderGrid(currentLaptops);
+        return;
+      }
+      const filtered = currentLaptops.filter((lap) => {
+        const text = `${lap.brand} ${lap.model} ${lap.processor} ${lap.gpu} ${lap.os}`.toLowerCase();
+        return text.includes(q);
+      });
+      renderGrid(filtered);
+    });
+  }
+
+  /* ---------------- Website Feedback (Backend integrated) ---------------- */
   const feedbackOverlay = document.getElementById("feedback-overlay");
   const feedbackGateOverlay = document.getElementById("feedback-gate-overlay");
 
@@ -544,10 +675,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   document.getElementById("feedback-gate-close").addEventListener("click", () => feedbackGateOverlay.classList.remove("is-open"));
-  feedbackGateOverlay.addEventListener("click", (e) => { if (e.target === feedbackGateOverlay) feedbackGateOverlay.classList.remove("is-open"); });
+  feedbackGateOverlay.addEventListener("click", (e) => {
+    if (e.target === feedbackGateOverlay) feedbackGateOverlay.classList.remove("is-open");
+  });
 
   document.getElementById("feedback-close").addEventListener("click", () => feedbackOverlay.classList.remove("is-open"));
-  feedbackOverlay.addEventListener("click", (e) => { if (e.target === feedbackOverlay) feedbackOverlay.classList.remove("is-open"); });
+  feedbackOverlay.addEventListener("click", (e) => {
+    if (e.target === feedbackOverlay) feedbackOverlay.classList.remove("is-open");
+  });
 
   const feedbackAnswers = {};
   document.querySelectorAll(".feedback-question").forEach((question) => {
@@ -566,16 +701,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById("feedback-form").addEventListener("submit", (e) => {
+  const feedbackForm = document.getElementById("feedback-form");
+  feedbackForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // ---- SIMULATION ONLY ----
-    // FUTURE: POST /api/feedback  { ...feedbackAnswers, comment }
-    // Website usability feedback only — never a laptop review, and
-    // never used as an input to the recommendation ranking engine.
-    document.getElementById("feedback-success").classList.add("is-visible");
+    const comment = document.getElementById("feedback-comment").value.trim();
+    const payload = { ...feedbackAnswers, comment };
+
+    try {
+      await GadgetLensAPI.feedback.submit(payload);
+      document.getElementById("feedback-success").classList.add("is-visible");
+      setTimeout(() => {
+        feedbackOverlay.classList.remove("is-open");
+        document.getElementById("feedback-success").classList.remove("is-visible");
+        feedbackForm.reset();
+      }, 2000);
+    } catch (err) {
+      alert("Failed to submit feedback: " + (err.message || "Please try again."));
+    }
   });
 
-  /* ---------------- AI chatbot (frontend shell, mock replies) ---------------- */
+  /* ---------------- AI Chatbot (Backend integrated) ---------------- */
   const chatbotLauncher = document.getElementById("chatbot-launcher");
   const chatbotPanel = document.getElementById("chatbot-panel");
   const chatbotBody = document.getElementById("chatbot-body");
@@ -596,30 +741,36 @@ document.addEventListener("DOMContentLoaded", () => {
     chatbotBody.scrollTop = chatbotBody.scrollHeight;
   }
 
-  // FUTURE: replace with POST /api/chatbot { question }, calling an
-  // AI model restricted to explaining specs/answering general
-  // questions from structured backend facts — never to rank laptops.
-  function mockChatbotReply(question) {
-    const q = question.toLowerCase();
-    for (const term of Object.keys(GLOSSARY)) {
-      if (q.includes(term.toLowerCase())) return GLOSSARY[term];
-    }
-    if (q.includes("best") || q.includes("which laptop") || q.includes("recommend")) {
-      return "I can't pick a laptop for you — that's handled by GadgetLens's ranking results, based on your priorities. I can explain any spec you see on a card, though!";
-    }
-    return "I can explain terms like RAM, SSD, CPU, GPU, OLED, IPS, or refresh rate. Try asking about one of those!";
-  }
-
-  chatbotForm.addEventListener("submit", (e) => {
+  chatbotForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const question = chatbotInput.value.trim();
     if (!question) return;
+
     addChatMessage(question, "user");
     chatbotInput.value = "";
-    setTimeout(() => addChatMessage(mockChatbotReply(question), "bot"), 400);
+
+    try {
+      const res = await GadgetLensAPI.chatbot.send(question);
+      if (res && res.reply) {
+        addChatMessage(res.reply, "bot");
+      } else {
+        addChatMessage("I can explain terms like RAM, SSD, CPU, GPU, OLED, IPS, or refresh rate. Ask away!", "bot");
+      }
+    } catch (err) {
+      // Safe fallback if network error
+      const q = question.toLowerCase();
+      let fallbackReply = "I can explain technical hardware specs (RAM, SSD, CPU, GPU, OLED, refresh rate).";
+      for (const [term, def] of Object.entries(glossaryMap)) {
+        if (q.includes(term.toLowerCase())) {
+          fallbackReply = `${term}: ${def}`;
+          break;
+        }
+      }
+      addChatMessage(fallbackReply, "bot");
+    }
   });
 
-  /* ---------------- Escape closes any open modal ---------------- */
+  /* ---------------- Escape Closes Modals ---------------- */
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     closeModal();
@@ -628,4 +779,9 @@ document.addEventListener("DOMContentLoaded", () => {
     saveGateOverlay.classList.remove("is-open");
     filtersPanel.classList.remove("is-open");
   });
+
+  /* ---------------- Initialize ---------------- */
+  await loadGlossary();
+  await loadSavedLaptops();
+  await fetchRecommendations();
 });

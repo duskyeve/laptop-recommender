@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
-from ..extensions import db
+try:
+    from extensions import db
+except ImportError:
+    from ..extensions import db
 
 class SavedLaptop(db.Model):
     __tablename__ = "saved_laptops"
@@ -12,3 +15,12 @@ class SavedLaptop(db.Model):
 
     user = db.relationship("User", back_populates="saved_laptops")
     laptop = db.relationship("Laptop", back_populates="saved_by")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "laptop_id": self.laptop_id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "laptop": self.laptop.to_dict() if self.laptop else None
+        }

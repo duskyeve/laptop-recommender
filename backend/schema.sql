@@ -4,14 +4,14 @@ CREATE DATABASE IF NOT EXISTS gadgetlens
 
 USE gadgetlens;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE processors (
+CREATE TABLE IF NOT EXISTS processors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     manufacturer VARCHAR(50) NOT NULL,
@@ -21,15 +21,17 @@ CREATE TABLE processors (
     explanation TEXT NULL
 );
 
-CREATE TABLE gpus (
+CREATE TABLE IF NOT EXISTS gpus (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
+    manufacturer VARCHAR(50) NULL,
     category VARCHAR(80) NOT NULL,
+    gpu_type VARCHAR(50) NULL,
     performance_score INT NULL,
     description TEXT NULL
 );
 
-CREATE TABLE laptops (
+CREATE TABLE IF NOT EXISTS laptops (
     id INT AUTO_INCREMENT PRIMARY KEY,
     brand VARCHAR(80) NOT NULL,
     model VARCHAR(150) NOT NULL,
@@ -54,7 +56,7 @@ CREATE TABLE laptops (
     CONSTRAINT fk_laptop_gpu FOREIGN KEY (gpu_id) REFERENCES gpus(id) ON DELETE SET NULL
 );
 
-CREATE TABLE tech_glossary (
+CREATE TABLE IF NOT EXISTS tech_glossary (
     id INT AUTO_INCREMENT PRIMARY KEY,
     term VARCHAR(80) NOT NULL UNIQUE,
     simple_description TEXT NOT NULL,
@@ -62,7 +64,7 @@ CREATE TABLE tech_glossary (
     category VARCHAR(80) NULL
 );
 
-CREATE TABLE user_preferences (
+CREATE TABLE IF NOT EXISTS user_preferences (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     purpose VARCHAR(50) NULL,
@@ -77,7 +79,7 @@ CREATE TABLE user_preferences (
     CONSTRAINT fk_preferences_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE saved_laptops (
+CREATE TABLE IF NOT EXISTS saved_laptops (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     laptop_id INT NOT NULL,
@@ -87,7 +89,7 @@ CREATE TABLE saved_laptops (
     CONSTRAINT fk_saved_laptop FOREIGN KEY (laptop_id) REFERENCES laptops(id) ON DELETE CASCADE
 );
 
-CREATE TABLE recommendation_history (
+CREATE TABLE IF NOT EXISTS recommendation_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -95,7 +97,7 @@ CREATE TABLE recommendation_history (
     CONSTRAINT fk_history_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE website_feedback (
+CREATE TABLE IF NOT EXISTS website_feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     ease_of_use INT NULL,

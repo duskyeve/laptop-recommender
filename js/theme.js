@@ -8,8 +8,7 @@
 
    This file also renders the small session badge ("Guest" or a
    signed-in username) found in the header of every page other
-   than the landing page, since both concerns are simple, global
-   UI state that every page needs.
+   than the landing page, and synchronizes authentication state.
    ========================================================= */
 
 const GadgetLens = {
@@ -35,7 +34,6 @@ const GadgetLens = {
   },
 
   initThemeToggle() {
-    // Apply saved/default theme immediately (before paint where possible).
     this.applyTheme(this.getTheme());
 
     document.querySelectorAll(".theme-toggle button").forEach((btn) => {
@@ -43,11 +41,7 @@ const GadgetLens = {
     });
   },
 
-  /* ---------------- Session (guest vs. signed-in user) ----------------
-     PROTOTYPE ONLY. This is not a real session/token — just a small
-     localStorage flag so the demo can distinguish "Guest" from
-     "signed in" behavior (save/feedback gating, etc.). The future
-     Flask backend will issue and validate real sessions. */
+  /* ---------------- Session (guest vs. signed-in user) ---------------- */
   getSession() {
     try {
       return JSON.parse(localStorage.getItem(this.SESSION_KEY));
@@ -71,6 +65,22 @@ const GadgetLens = {
   isSignedIn() {
     const session = this.getSession();
     return !!session && session.type === "user";
+  },
+
+  async syncSessionWithBackend() {
+    if (typeof GadgetLensAPI !== "undefined" && GadgetLensAPI.auth) {
+      try {
+        const res = await GadgetLensAPI.auth.me();
+        if (res && res.authenticated && res.user) {
+          this.setSession({ type: "user", username: res.user.username, id: res.user.id });
+        } else if (this.isSignedIn()) {
+          // Backend session expired
+          this.startGuestSession();
+        }
+      } catch (err) {
+        // Backend not reachable or offline; preserve existing local session state
+      }
+    }
   },
 
   /* Renders the small "Guest" / "username" indicator + sign-out
@@ -108,7 +118,14 @@ const GadgetLens = {
 
     const signOutBtn = document.getElementById("sign-out-btn");
     if (signOutBtn) {
-      signOutBtn.addEventListener("click", () => {
+      signOutBtn.addEventListener("click", async () => {
+        try {
+          if (typeof GadgetLensAPI !== "undefined" && GadgetLensAPI.auth) {
+            await GadgetLensAPI.auth.logout();
+          }
+        } catch (e) {
+          // Ignore error on sign out
+        }
         this.clearSession();
         window.location.href = "index.html";
       });
@@ -119,4 +136,5 @@ const GadgetLens = {
 document.addEventListener("DOMContentLoaded", () => {
   GadgetLens.initThemeToggle();
   GadgetLens.renderSessionBadge();
+  GadgetLens.syncSessionWithBackend().then(() => GadgetLens.renderSessionBadge());
 });

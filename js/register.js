@@ -1,19 +1,7 @@
 /* =========================================================
    register.js — Handles account creation: username, password
    strength meter + requirements, and confirm-password matching.
-
-   PROTOTYPE ONLY — NO ACCOUNT IS ACTUALLY CREATED.
-   This file never sends the password anywhere, hashes it, or
-   persists it — not in localStorage, not anywhere. It only
-   starts a local "signed in" session (username only) so the
-   rest of the prototype can demonstrate signed-in behavior.
-
-   FUTURE BACKEND INTEGRATION POINT:
-       POST /api/auth/register   { username, password }
-   Flask will hash the password (e.g. bcrypt/argon2) and store
-   { username, password_hash, created_at } — matching the future
-   USERS table, which intentionally has NO role/admin column,
-   since GadgetLens has only one account type.
+   Integrates directly with Flask backend POST /api/auth/register.
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -32,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const strengthLabel = document.getElementById("pw-strength-label");
   const requirementItems = document.querySelectorAll("#pw-requirements li");
   const guestBtn = document.getElementById("guest-btn");
+  const submitBtn = form.querySelector('button[type="submit"]');
 
   function evaluatePassword(value) {
     const rules = {
@@ -75,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearUsernameError() {
     usernameField.classList.remove("has-error");
     usernameError.classList.remove("is-visible");
+    usernameError.textContent = "Username must be at least 3 characters.";
   }
   function clearConfirmError() {
     confirmField.classList.remove("has-error");
@@ -83,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   usernameInput.addEventListener("input", clearUsernameError);
   confirmInput.addEventListener("input", clearConfirmError);
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const username = usernameInput.value.trim();
@@ -114,20 +104,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     clearConfirmError();
 
-    // ---- SIMULATION ONLY ----
-    // No password is stored anywhere — only the username, so the
-    // header/session badge can show who is "signed in" for the demo.
-    GadgetLens.setSession({ type: "user", username });
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating account...";
 
-    // ---- FUTURE: replace the line above with -----------------
-    // await fetch("/api/auth/register", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ username, password }),
-    // });
-    // ------------------------------------------------------------
-
-    window.location.href = "preferences.html";
+      const res = await GadgetLensAPI.auth.register(username, password);
+      GadgetLens.setSession({ type: "user", username: res.user.username, id: res.user.id });
+      window.location.href = "preferences.html";
+    } catch (err) {
+      usernameField.classList.add("has-error");
+      usernameError.textContent = err.message || "Failed to create account. Please try another username.";
+      usernameError.classList.add("is-visible");
+      usernameInput.focus();
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create Free Account";
+    }
   });
 
   guestBtn.addEventListener("click", () => {

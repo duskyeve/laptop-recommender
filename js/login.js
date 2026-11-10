@@ -1,24 +1,8 @@
 /* =========================================================
    login.js — Handles the login page (username + password).
-
-   PROTOTYPE ONLY — NOT REAL AUTHENTICATION.
-   There is no backend yet, so this file cannot actually verify
-   a username/password against stored credentials. It only
-   checks that both fields are filled in, then starts a local
-   "signed in" session so the rest of the prototype (save,
-   feedback, saved-laptops view) can demonstrate what happens
-   once a user IS signed in.
-
-   The password is validated for presence only — it is never
-   stored, compared, or persisted anywhere, in localStorage or
-   otherwise.
-
-   FUTURE BACKEND INTEGRATION POINT:
-       POST /api/auth/login   { username, password }
-   Flask will hash-compare the password against the stored
-   password_hash and issue a real session/token. This file's
-   local "any non-empty credentials succeed" behavior will be
-   replaced entirely by that response.
+   Integrates directly with Flask backend POST /api/auth/login.
+   Validates credentials, establishes real session, and handles
+   guest bypass.
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,18 +14,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password");
   const passwordError = document.getElementById("password-error");
   const guestBtn = document.getElementById("guest-btn");
+  const submitBtn = form.querySelector('button[type="submit"]');
 
   function clearErrors() {
     usernameField.classList.remove("has-error");
     usernameError.classList.remove("is-visible");
+    usernameError.textContent = "Please enter your username.";
     passwordField.classList.remove("has-error");
     passwordError.classList.remove("is-visible");
+    passwordError.textContent = "Please enter your password.";
   }
 
   usernameInput.addEventListener("input", clearErrors);
   passwordInput.addEventListener("input", clearErrors);
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearErrors();
 
@@ -61,19 +48,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (hasError) return;
 
-    // ---- SIMULATION ONLY: no real credential check happens here ----
-    GadgetLens.setSession({ type: "user", username });
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Signing in...";
 
-    // ---- FUTURE: replace the line above with -----------------
-    // const res = await fetch("/api/auth/login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ username, password }),
-    // });
-    // Flask returns a real session/token on success.
-    // ------------------------------------------------------------
-
-    window.location.href = "preferences.html";
+      const res = await GadgetLensAPI.auth.login(username, password);
+      GadgetLens.setSession({ type: "user", username: res.user.username, id: res.user.id });
+      window.location.href = "preferences.html";
+    } catch (err) {
+      passwordField.classList.add("has-error");
+      passwordError.textContent = err.message || "Invalid username or password.";
+      passwordError.classList.add("is-visible");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign In";
+    }
   });
 
   guestBtn.addEventListener("click", () => {

@@ -2,29 +2,10 @@
    preferences.js — Handles the 5-step preference questionnaire:
    step navigation, purpose selection, conditional gaming
    question, budget slider, pill-choice groups, and drag/arrow
-   priority ranking.
-
-   FUTURE BACKEND INTEGRATION POINT:
-   On submit, this file bundles everything into one object and
-   stores it in localStorage so results.html can render a
-   preview. The real system will instead call:
-
-       POST /api/preferences   { ...preferences }
-
-   Flask will use this payload (purpose, budget, basic
-   preferences, priority order, advanced specs) to run the
-   deterministic filtering + ranking engine — designed
-   separately, before backend integration. Nothing here decides
-   which laptops are good, and priorityOrder is stored exactly
-   as the user arranged it (an ordered list of factor keys) —
-   this file never converts that order into weights or a score.
+   priority ranking. Integrates with GadgetLens backend.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-  // ---- Access guard: guests AND signed-in users may both take the
-  // questionnaire; only a visitor with no session at all (who
-  // skipped the landing page's guest/sign-in entry points) is sent
-  // back to sign in or continue as guest properly. ----
+document.addEventListener("DOMContentLoaded", async () => {
   if (!GadgetLens.getSession()) {
     window.location.href = "login.html";
     return;
@@ -76,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     progressLabel.textContent = `Step ${stepNumber} of ${TOTAL_STEPS}`;
 
-    // Move focus to the step heading for keyboard/screen-reader users.
     const heading = steps[stepNumber - 1]?.querySelector("h2");
     if (heading) heading.setAttribute("tabindex", "-1");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -187,10 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ---------------- Step 4: Priority ranking ----------------
-     IMPORTANT: this ONLY collects the order the user drags/arrows
-     the factors into. It does NOT turn that order into numeric
-     weights, scores, or a ranking formula of any kind. */
+  /* ---------------- Step 4: Priority ranking ---------------- */
   const priorityList = document.getElementById("priority-list");
 
   function refreshPriorityRanks() {
@@ -257,8 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------------- Submit ---------------- */
   const form = document.getElementById("preferences-form");
+  const submitBtn = document.getElementById("see-recommendations-btn");
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     if (!preferences.purpose) {
@@ -266,20 +244,25 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ---- SIMULATION ONLY ----
+    refreshPriorityRanks();
+
+    // Store in localStorage for instant access across views
     localStorage.setItem("gadgetlens_preferences", JSON.stringify(preferences));
 
-    // ---- FUTURE: replace the line above with -----------------
-    // await fetch("/api/preferences", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(preferences),
-    // });
-    // The response would contain the ranked laptop list that
-    // results.html currently renders from mock data instead.
-    // ------------------------------------------------------------
-
-    window.location.href = "results.html";
+    // Save to backend database
+    try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Calculating matches...";
+      }
+      if (typeof GadgetLensAPI !== "undefined" && GadgetLensAPI.preferences) {
+        await GadgetLensAPI.preferences.save(preferences);
+      }
+    } catch (e) {
+      console.warn("Could not save preferences to backend; continuing with local state:", e);
+    } finally {
+      window.location.href = "results.html";
+    }
   });
 
   showStep(1);

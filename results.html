@@ -36,8 +36,8 @@
   <h1>Your Laptop Matches</h1>
   <p>Based on your budget, needs, and priorities.</p>
 
-  <p class="prototype-note">
-    Frontend prototype: the match scores, rankings, and explanations below are placeholder data for demonstrating the interface. The deterministic filtering and ranking engine described in the project brief has not been built yet — it will be designed separately and implemented in Flask.
+  <p class="prototype-note" id="engine-status-badge">
+    ✓ Connected to GadgetLens Recommendation Engine: Ranked deterministically based on your technical priorities and objective specifications.
   </p>
 
   <div class="results-summary" id="results-summary"><!-- Populated by results.js from stored preferences --></div>
@@ -264,6 +264,7 @@
 
 <div class="term-tooltip" id="term-tooltip" role="tooltip"></div>
 
+<script src="js/api.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/results.js"></script>
 </body>

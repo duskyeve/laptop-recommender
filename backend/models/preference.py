@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
-from ..extensions import db
+try:
+    from extensions import db
+except ImportError:
+    from ..extensions import db
 
 class UserPreference(db.Model):
     __tablename__ = "user_preferences"
@@ -17,3 +20,18 @@ class UserPreference(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     user = db.relationship("User", back_populates="preferences")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "purpose": self.purpose,
+            "gaming_level": self.gaming_level,
+            "budget_min": self.budget_min,
+            "budget_max": self.budget_max,
+            "priority_order": self.priority_order,
+            "simple_preferences": self.simple_preferences,
+            "advanced_preferences": self.advanced_preferences,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }

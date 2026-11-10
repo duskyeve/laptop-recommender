@@ -1,4 +1,7 @@
-from ..extensions import db
+try:
+    from extensions import db
+except ImportError:
+    from ..extensions import db
 
 class Processor(db.Model):
     __tablename__ = "processors"
@@ -12,3 +15,14 @@ class Processor(db.Model):
     explanation = db.Column(db.Text, nullable=True)
 
     laptops = db.relationship("Laptop", back_populates="processor")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "manufacturer": self.manufacturer,
+            "category": self.category,
+            "performance_score": self.performance_score,
+            "generation": self.generation,
+            "explanation": self.explanation
+        }
